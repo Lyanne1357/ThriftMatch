@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2");
+const fs = require("fs");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -65,6 +66,7 @@ const db = mysql.createConnection({
     password: process.env.DB_PASSWORD || "",
     database: process.env.DB_NAME || "thriftmatch",
     ssl: process.env.DB_HOST ? {
+        ca: fs.readFileSync("/etc/secrets/ca.pem"),
         rejectUnauthorized: true
     } : undefined
 });
