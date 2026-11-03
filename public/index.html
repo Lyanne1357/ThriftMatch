@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThriftMatch</title>
+    <!-- Bootstrap CSS -->
+<link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+>
+
+<!-- Existing Custom CSS -->
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    
+<header class="site-header">
+    <div class="header-brand">
+    <h1 class="brand-logo">
+        <svg class="hanger-icon" xmlns="http://www.w3.org/2000/svg"
+             viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true">
+            <path d="M9 5a3 3 0 0 1 6 0c0 2-3 2-3 4"/>
+            <path d="M3 14l9-5 9 5"/>
+            <path d="M3 14l9 7 9-7"/>
+        </svg>
+        <span>ThriftMatch</span>
+    </h1>
+
+    <p>Find thrift clothes that match your style.</p>
+</div>
+
+    <div class="header-search">
+        <label for="search-input">Search Products</label>
+        <input
+            type="text"
+            id="search-input"
+            placeholder="Search thrift clothes..."
+        >
+    </div>
+
+
+<div class="header-actions">
+    <span id="welcome-message" class="welcome-message" hidden></span>
+
+    <button type="button" id="account-button" class="header-button">
+        Account
+    </button>
+
+    <button type="button" id="messages-button" class="header-button">
+        Messages
+    </button>
+
+   <button type="button" id="add-product-button" class="header-button primary-button" hidden>
+    + Add Product
+</button>
+
+    <a href="/admin-login.html" class="header-button admin-login-button">
+    Admin Login
+</a>
+
+</div>
+
+
+    
+<section id="filter-section" class="header-filters">
+    <div class="filter-controls">
+
+        <div class="filter-title">
+            <h2>Find Your Style</h2>
+            <p>Refine your search for the perfect thrift find.</p>
+        </div>
+
+        <div class="filter-field">
+            <label for="size-filter">Size</label>
+            <select id="size-filter">
+                <option value="">All Sizes</option>
+                <option value="S">Small</option>
+                <option value="M">Medium</option>
+                <option value="L">Large</option>
+                <option value="XL">Extra Large</option>
+                <option value="Free Size">Free Size</option>
+            </select>
+        </div>
+
+        <div class="filter-field">
+            <label for="color-filter">Color</label>
+            <select id="color-filter">
+                <option value="">All Colors</option>
+                <option value="Black">Black</option>
+                <option value="White">White</option>
+                <option value="Brown">Brown</option>
+                <option value="Pink">Pink</option>
+                <option value="Blue">Blue</option>
+            </select>
+        </div>
+
+        <div class="filter-field">
+            <label for="style-filter">Style</label>
+            <select id="style-filter">
+                <option value="">All Styles</option>
+                <option value="Casual">Casual</option>
+                <option value="Vintage">Vintage</option>
+                <option value="Formal">Formal</option>
+                <option value="Streetwear">Streetwear</option>
+            </select>
+        </div>
+
+        <div class="filter-field">
+            <label for="min-price">Minimum Price</label>
+            <select id="min-price">
+                <option value="">Min Price</option>
+                <option value="0">₱0</option>
+                <option value="50">₱50</option>
+                <option value="100">₱100</option>
+                <option value="150">₱150</option>
+                <option value="200">₱200</option>
+            </select>
+        </div>
+
+        <div class="filter-field">
+            <label for="max-price">Maximum Price</label>
+            <select id="max-price">
+                <option value="">Max Price</option>
+                <option value="100">₱100</option>
+                <option value="150">₱150</option>
+                <option value="200">₱200</option>
+                <option value="300">₱300</option>
+                <option value="500">₱500</option>
+            </select>
+        </div>
+
+        <button type="button" id="reset-filters" class="reset-button">
+            ↺ Reset All
+        </button>
+
+    </div>
+</section>
+</header>
+
+<!-- THRIFTMATCH HERO CAROUSEL -->
+<section id="hero-carousel" class="hero-carousel">
+
+    <div class="hero-slide active">
+        <div class="hero-slide-content">
+            <p>THRIFT MORE, WASTE LESS</p>
+            <h2>One person's old, your new favorite.</h2>
+            <span>Find your next favorite thrift piece.</span>
+        </div>
+    </div>
+
+    <!-- SELLER MANAGEMENT BANNER -->
+    <section id="seller-banner" class="seller-banner" hidden>
+        <div class="seller-banner-content">
+            <div>
+                <p class="seller-banner-label">SELLER CENTER</p>
+                <h2>Welcome to Your Shop!</h2>
+                <p>Manage your thrift listings and keep your shop updated.</p>
+            </div>
+
+            <button type="button" id="manage-products-button">
+                Manage My Products →
+            </button>
+        </div>
+    </section>
+
+    <button type="button" id="hero-prev" class="hero-nav hero-prev"
+        aria-label="Previous slide">‹</button>
+
+    <button type="button" id="hero-next" class="hero-nav hero-next"
+        aria-label="Next slide">›</button>
+
+</section>
+
+<main>
+
+        <!-- USER ACCOUNT SECTION -->
+       
+<!-- ACCOUNT MODAL -->
+<div id="account-modal" class="modal-overlay" hidden>
+    <section id="account-section" class="modal-card">
+
+        <button
+            type="button"
+            id="close-account-modal"
+            class="header-button"
+        >
+            Close ✕
+        </button>
+
+    <div class="account-heading">
+        <span class="account-eyebrow">YOUR THRIFT JOURNEY STARTS HERE</span>
+        <h2>Welcome to ThriftMatch ♡</h2>
+        <p>Find your style. Love your finds. Wear them again.</p>
+    </div>
+
+    <div class="account-forms">
+
+        <!-- REGISTER FORM -->
+        <div class="account-card" id="register-section">
+            <div class="account-card-heading">
+                <div class="account-icon">♡</div>
+                <div>
+                    <h3>Create an Account</h3>
+                    <p>Join us and discover your next favorite find.</p>
+                </div>
+            </div>
+
+            <form id="register-form">
+                <label for="register-name">Full Name</label>
+                <input
+                    type="text"
+                    id="register-name"
+                    placeholder="Enter your full name"
+                    autocomplete="name"
+                    required
+                >
+
+                <label for="register-email">Email Address</label>
+                <input
+                    type="email"
+                    id="register-email"
+                    placeholder="you@example.com"
+                    autocomplete="email"
+                    required
+                >
+
+                
+<label for="register-password">Password</label>
+<div class="password-wrapper">
+    <input
+        type="password"
+        id="register-password"
+        placeholder="At least 8 characters"
+        minlength="8"
+        autocomplete="new-password"
+        required
+    >
+    <button
+        type="button"
+        id="toggle-register-password"
+        class="password-toggle"
+        aria-label="Show password"
+        aria-pressed="false"
+    >
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+        >
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+            <circle cx="12" cy="12" r="3"/>
+        </svg>
+    </button>
+</div>
+
+<label for="register-role">Account Type</label>
+<select id="register-role" required>
+    <option value="customer" selected>Customer</option>
+    <option value="seller">Seller</option>
+</select>
+
+
+<label for="register-confirm-password">Confirm Password</label>
+<div class="password-wrapper">
+    <input
+        type="password"
+        id="register-confirm-password"
+        placeholder="Re-enter your password"
+        autocomplete="new-password"
+        required
+    >
+    <button
+        type="button"
+        id="toggle-register-confirm-password"
+        class="password-toggle"
+        aria-label="Show confirm password"
+        aria-pressed="false"
+    >
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+        >
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+            <circle cx="12" cy="12" r="3"/>
+        </svg>
+    </button>
+</div>
+
+
+                <button type="submit" class="account-button">
+                    Create My Account
+                </button>
+
+                <p id="register-message" class="account-message" role="status"></p>
+            </form>
+
+            <p class="account-switch">
+                Already have an account?
+                <a href="#login-section">Log in</a>
+            </p>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <div class="account-card" id="login-section">
+            <div class="account-card-heading">
+                <div class="account-icon">♡</div>
+                <div>
+                    <h3>Welcome Back!</h3>
+                    <p>Log in to continue your thrift journey.</p>
+                </div>
+            </div>
+
+            <form id="login-form">
+                <label for="login-email">Email Address</label>
+                <input
+                    type="email"
+                    id="login-email"
+                    placeholder="you@example.com"
+                    autocomplete="email"
+                    required
+                >
+
+               
+<label for="login-password">Password</label>
+<div class="password-wrapper">
+    <input
+        type="password"
+        id="login-password"
+        placeholder="Enter your password"
+        autocomplete="current-password"
+        required
+    >
+    <button
+        type="button"
+        id="toggle-login-password"
+        class="password-toggle"
+        aria-label="Show password"
+        aria-pressed="false"
+    >
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+        >
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+            <circle cx="12" cy="12" r="3"/>
+        </svg>
+    </button>
+</div>
+
+
+                <button type="submit" class="account-button">
+                    Log In to My Account
+                </button>
+
+                <p id="login-message" class="account-message" role="status"></p>
+            </form>
+
+            <p class="account-switch">
+                New to ThriftMatch?
+                <a href="#register-section">Create an account</a>
+            </p>
+        </div>
+
+        </section>
+</div>
+        <!-- Existing product sections continue below -->
+
+      <p class="section-eyebrow">DISCOVER YOUR NEXT FIND</p>
+<h2 class="products-heading">Available Thrift Products</h2>
+
+     <!-- ADD PRODUCT MODAL -->
+<div id="add-product-modal" class="modal-overlay" hidden>
+    <section id="add-product-section" class="modal-card">
+        <button
+            type="button"
+            id="close-add-product-modal"
+            class="header-button"
+        >
+            Close ✕
+        </button>
+
+        <h2>Add New Thrift Product</h2>
+
+        <div id="add-product-content" hidden>
+
+            <form id="add-product-form">
+                <label for="product-name">Product Name</label>
+                <input type="text" id="product-name" required>
+
+                <label for="product-price">Price (₱)</label>
+                <input type="number" id="product-price" min="0.01" step="0.01" required>
+
+                <label for="product-size">Size</label>
+                <select id="product-size" required>
+                    <option value="">Select Size</option>
+                    <option value="S">Small</option>
+                    <option value="M">Medium</option>
+                    <option value="L">Large</option>
+                    <option value="XL">Extra Large</option>
+                    <option value="Free Size">Free Size</option>
+                </select>
+
+                <label for="product-color">Color</label>
+                <input type="text" id="product-color" required>
+
+                <label for="product-style">Style</label>
+                <select id="product-style" required>
+                    <option value="">Select Style</option>
+                    <option value="Casual">Casual</option>
+                    <option value="Vintage">Vintage</option>
+                    <option value="Formal">Formal</option>
+                    <option value="Streetwear">Streetwear</option>
+                </select>
+
+                
+<label for="product-images">Product Image URLs (Maximum 10)</label>
+<textarea
+    id="product-images"
+    rows="5"
+    placeholder="Paste image URL 1&#10;Paste image URL 2&#10;Paste image URL 3"
+></textarea>
+<small>Enter one image URL per line. Maximum of 10 images.</small>
+
+                <label for="product-description">Description</label>
+                <textarea id="product-description" required></textarea>
+
+                                <button type="submit" id="add-product-submit-button">
+    Add Product
+</button>
+                <p id="form-message" role="status"></p>
+            </form>
+        </div>
+    </section>
+</div>
+       
+<!-- EDIT PRODUCT MODAL -->
+<div id="edit-product-section" class="modal-overlay" hidden>
+    <section class="modal-card edit-product-modal">
+        <button
+            type="button"
+            id="cancel-edit-button"
+            class="modal-close"
+            aria-label="Close edit product form"
+        >✕</button>
+
+        <h2>Edit Thrift Product</h2>
+
+        <form id="edit-product-form">
+            <input type="hidden" id="edit-product-id">
+
+          
+<div class="edit-product-grid">
+
+    <div class="edit-product-field">
+        <label for="edit-product-name">Product Name</label>
+        <input type="text" id="edit-product-name" required>
+    </div>
+
+    <div class="edit-product-field">
+        <label for="edit-product-price">Price (₱)</label>
+        <input type="number" id="edit-product-price" min="0.01" step="0.01" required>
+    </div>
+
+    <div class="edit-product-field">
+        <label for="edit-product-size">Size</label>
+        <select id="edit-product-size" required>
+            <option value="S">Small</option>
+            <option value="M">Medium</option>
+            <option value="L">Large</option>
+            <option value="XL">Extra Large</option>
+            <option value="Free Size">Free Size</option>
+        </select>
+    </div>
+
+    <div class="edit-product-field">
+        <label for="edit-product-color">Color</label>
+        <input type="text" id="edit-product-color" required>
+    </div>
+
+    <div class="edit-product-field">
+        <label for="edit-product-style">Style</label>
+        <select id="edit-product-style" required>
+            <option value="Casual">Casual</option>
+            <option value="Vintage">Vintage</option>
+            <option value="Formal">Formal</option>
+            <option value="Streetwear">Streetwear</option>
+        </select>
+    </div>
+
+</div>
+
+
+            
+
+<label>Product Images (Maximum 10)</label>
+
+<div id="edit-product-image-list"></div>
+
+<button type="button" id="add-edit-product-image">
+    + Add Another Photo
+</button>
+
+<small>
+    Enter one image URL per photo. Click a photo preview to view it larger.
+</small>
+
+<!-- Temporary compatibility with the existing save function -->
+<textarea id="edit-product-images" hidden></textarea>
+
+
+
+            <label for="edit-product-description">Description</label>
+            <textarea id="edit-product-description" required></textarea>
+
+            
+<label for="edit-product-availability">Availability</label>
+<select id="edit-product-availability" required>
+    <option value="Available">Available</option>
+    <option value="Pending">Pending</option>
+    <option value="Sold">Sold</option>
+</select>
+
+
+            <button type="submit">Save Changes</button>
+            <button type="button" id="cancel-edit-button-form">Cancel</button>
+
+            <p id="edit-message" role="status"></p>
+        </form>
+    </section>
+</div>
+
+
+        <!-- PRODUCT LIST -->
+        <section id="products-section">
+          
+
+            <div id="product-list">
+                <p>Products will appear here.</p>
+            </div>
+        </section>
+
+    
+<!-- RECOMMENDED PRODUCTS -->
+<section id="recommended-section">
+    <div class="recommended-heading">
+        <div>
+            <h2>Recommended for You</h2>
+            <p>Discover similar thrift finds you might like.</p>
+        </div>
+    </div>
+
+    <div id="recommended-list">
+        <p>Recommended products will appear here.</p>
+    </div>
+</section>
+
+<!-- EXTERNAL PRODUCTS -->
+<section id="external-products-section">
+    <div class="external-products-heading">
+        <div>
+            <h2>Explore More Products</h2>
+            <p>Sample product data from an external API.</p>
+        </div>
+    </div>
+
+    <div id="external-product-list">
+        <p>Loading external products...</p>
+    </div>
+</section>
+
+<!-- PRODUCT DETAILS MODAL -->
+<div id="product-details" class="modal-overlay" hidden>
+    <section class="modal-card product-details-modal">
+        <button id="back-button" type="button" class="modal-close">
+            ✕
+        </button>
+
+        <h2>Product Details</h2>
+
+        <div id="details-content"></div>
+    </section>
+</div>
+
+<!-- MANAGE MY PRODUCTS MODAL -->
+<div id="manage-products-modal" class="modal-overlay" hidden>
+    <section class="modal-card manage-products-modal">
+
+        <button
+            type="button"
+            id="close-manage-products"
+            class="modal-close"
+            aria-label="Close Manage My Products"
+        >
+            ✕
+        </button>
+
+        <div class="manage-products-modal-heading">
+            <p class="seller-banner-label">SELLER CENTER</p>
+            <h2>Manage My Products</h2>
+            <p>Manage your thrift listings and keep your shop updated.</p>
+        </div>
+
+        <div id="my-product-list" class="manage-products-grid">
+            <p>Your products will appear here.</p>
+        </div>
+
+        <!-- MY PRODUCTS PAGINATION -->
+<div id="my-products-pagination" class="my-products-pagination" hidden>
+    <button type="button" id="my-products-prev" disabled>
+        ‹
+    </button>
+
+    <span id="my-products-page-info">Page 1</span>
+
+    <button type="button" id="my-products-next" disabled>
+        ›
+    </button>
+</div>
+
+    </section>
+</div>
+
+    </main>
+
+    
+<!-- Larger Product Image Preview -->
+<div id="edit-image-preview-modal" class="edit-image-preview-modal" hidden>
+    <div class="edit-image-preview-content">
+        <button
+            type="button"
+            id="close-edit-image-preview"
+            class="edit-image-preview-close"
+            aria-label="Close image preview"
+        >×</button>
+
+        <button
+            type="button"
+            id="previous-edit-image"
+            class="edit-image-preview-nav"
+        >❮</button>
+
+        <img id="edit-image-preview-large" src="" alt="Product image preview">
+
+        <button
+            type="button"
+            id="next-edit-image"
+            class="edit-image-preview-nav"
+        >❯</button>
+
+        <p id="edit-image-preview-count"></p>
+    </div>
+</div>
+
+
+<!-- MESSAGES INBOX AND CHAT LAYOUT -->
+<div id="chat-inbox-modal" class="modal-overlay" hidden>
+    <section class="modal-card messages-layout">
+
+        <button
+    id="close-chat-inbox"
+    type="button"
+    class="modal-close"
+    aria-label="Close messages"
+>✕</button>
+
+               <!-- LEFT: MESSAGES INBOX -->
+        <aside class="messages-sidebar">
+            <div class="messages-sidebar-header">
+                <div>
+                    <h2>Messages</h2>
+                    <p>Your conversations</p>
+                </div>
+            </div>
+
+            <div id="chat-inbox-list">
+                <p>Loading conversations...</p>
+            </div>
+
+            <p id="chat-inbox-status" role="status"></p>
+        </aside>
+
+        <!-- RIGHT: CHAT CONVERSATION -->
+        <section id="chat-modal" class="chat-modal" hidden>
+            <header class="conversation-header">
+                <div>
+                    <h2 id="chat-contact-name">Conversation</h2>
+                    <p id="chat-product-name">ThriftMatch messages</p>
+                </div>
+
+            </header>
+
+            <div id="chat-messages" aria-live="polite">
+                <p>Select a conversation to view messages.</p>
+            </div>
+
+            <form id="chat-form">
+                <input
+                    id="chat-message-input"
+                    type="text"
+                    placeholder="Type your message..."
+                    autocomplete="off"
+                    required
+                >
+
+                <button type="submit" class="primary">Send</button>
+            </form>
+
+            <p id="chat-status" role="status"></p>
+        </section>
+
+    </section>
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>

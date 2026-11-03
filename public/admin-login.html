@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | ThriftMatch</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="admin-login-container">
+        <form id="admin-login-form" class="admin-login-form">
+            <h1>ThriftMatch</h1>
+            <h2>Admin Login</h2>
+            <p>Log in using your administrator account.</p>
+
+            <label for="admin-email">Email</label>
+            <input
+                type="email"
+                id="admin-email"
+                placeholder="Enter admin email"
+                required
+            >
+
+            
+<label for="admin-password">Password</label>
+
+<div class="password-input-wrapper">
+    <input
+        type="password"
+        id="admin-password"
+        placeholder="Enter admin password"
+        required
+    >
+
+    <button
+        type="button"
+        id="toggle-admin-password"
+        class="password-toggle"
+        aria-label="Show password"
+        aria-pressed="false"
+    >
+        <svg
+            id="password-eye-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/>
+            <circle cx="12" cy="12" r="3"/>
+        </svg>
+    </button>
+</div>
+
+
+            <button type="submit">Log In</button>
+
+            <p id="admin-login-message" role="status"></p>
+            <a href="/">Back to ThriftMatch</a>
+        </form>
+    </main>
+
+     <script src="script.js"></script>
+</body>
+</html>

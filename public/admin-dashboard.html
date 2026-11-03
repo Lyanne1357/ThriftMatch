@@ -1,0 +1,652 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThriftMatch Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+       
+/* ADMIN DASHBOARD LAYOUT */
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #faf6ef;
+}
+
+/* SIDEBAR */
+.admin-sidebar {
+    width: 250px;
+    min-width: 250px;
+    background: #44352d;
+    color: #ffffff;
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-brand {
+    margin-bottom: 40px;
+}
+
+.sidebar-brand h2 {
+    font-size: 25px;
+    margin-bottom: 5px;
+    color: #ffffff;
+}
+
+.sidebar-brand p {
+    color: #d8c8b8;
+    margin: 0;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sidebar-link,
+.sidebar-logout {
+    display: block;
+    width: 100%;
+    padding: 13px 16px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #ffffff;
+    text-align: left;
+    text-decoration: none;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+    background: #94745b;
+    color: #ffffff;
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+    padding-top: 30px;
+}
+
+.sidebar-logout {
+    background: #eee4d8;
+    color: #44352d;
+    text-align: center;
+}
+
+.sidebar-logout:hover {
+    background: #ffffff;
+}
+
+/* MAIN DASHBOARD */
+.admin-dashboard {
+    flex: 1;
+    min-width: 0;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 35px;
+}
+
+.admin-header {
+    margin-bottom: 30px;
+}
+
+.admin-dashboard h1 {
+    color: #44352d;
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.admin-dashboard .admin-subtitle {
+    color: #89796b;
+    margin: 0;
+}
+
+/* SUMMARY CARDS */
+.admin-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 18px;
+    margin: 24px 0 35px;
+}
+
+.summary-card {
+    background: #ffffff;
+    padding: 22px;
+    border-radius: 12px;
+    border: 1px solid #e5d8c8;
+    box-shadow: 0 2px 8px rgba(68, 53, 45, 0.06);
+    text-align: left;
+}
+
+.summary-card h3 {
+    font-size: 14px;
+    color: #89796b;
+    margin: 0 0 12px;
+}
+
+.summary-card p {
+    font-size: 30px;
+    font-weight: bold;
+    color: #44352d;
+    margin: 0;
+}
+
+/* MANAGEMENT CONTENT */
+.admin-content {
+    background: #ffffff;
+    border: 1px solid #e5d8c8;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(68, 53, 45, 0.05);
+}
+
+.admin-content-header {
+    margin-bottom: 20px;
+}
+
+.admin-content-header h2 {
+    color: #44352d;
+    font-size: 21px;
+    margin-bottom: 6px;
+}
+
+.admin-content-header p {
+    color: #89796b;
+    margin: 0;
+}
+
+.admin-status {
+    margin: 16px 0;
+    color: #89796b;
+}
+
+.admin-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 14px;
+    border-bottom: 1px solid #e5d8c8;
+    text-align: left;
+}
+
+.admin-table th {
+    background: #eee4d8;
+    color: #44352d;
+    font-weight: 600;
+}
+
+.admin-table td {
+    color: #44352d;
+}
+
+.admin-table tbody tr:hover {
+    background: #faf6ef;
+}
+
+.admin-table td img {
+    border-radius: 7px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .admin-layout {
+        flex-direction: column;
+    }
+
+    .admin-sidebar {
+        width: 100%;
+        min-width: 0;
+        padding: 18px;
+    }
+
+    .sidebar-brand {
+        margin-bottom: 18px;
+    }
+
+    .sidebar-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .sidebar-link {
+        width: auto;
+    }
+
+    .sidebar-bottom {
+        margin-top: 15px;
+        padding-top: 0;
+    }
+
+    .admin-dashboard {
+        padding: 22px;
+    }
+
+    .admin-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-content {
+        padding: 15px;
+    }
+}
+
+    </style>
+</head>
+
+<body>
+    <div class="admin-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-brand">
+                <h2>ThriftMatch</h2>
+                <p>Admin Panel</p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#overview" class="sidebar-link">
+                Dashboard
+            </a>
+
+                <button id="load-users-button" type="button"
+                    class="sidebar-link">
+                    Users
+                </button>
+
+                <button id="load-products-button" type="button"
+                    class="sidebar-link">
+                    Products
+                </button>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <button id="admin-logout-button" type="button"
+                    class="sidebar-logout">
+                    Log Out
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="admin-dashboard">
+
+            <header class="admin-header">
+                <div>
+                    <h1>Dashboard Overview</h1>
+                    <p class="admin-subtitle">
+                        Welcome to your ThriftMatch administration panel.
+                    </p>
+                </div>
+            </header>
+
+            <!-- SUMMARY CARDS -->
+            <section id="overview" class="admin-summary">
+
+                <div class="summary-card">
+                    <h3>Total Accounts</h3>
+                    <p id="total-accounts">0</p>
+                </div>
+
+                <div class="summary-card">
+                    <h3>Total Users</h3>
+                    <p id="total-users">0</p>
+                </div>
+
+                <div class="summary-card">
+                    <h3>Total Customers</h3>
+                    <p id="total-customers">0</p>
+                </div>
+
+                <div class="summary-card">
+                    <h3>Total Sellers</h3>
+                    <p id="total-sellers">0</p>
+                </div>
+
+                <div class="summary-card">
+                    <h3>Total Products</h3>
+                    <p id="total-products">0</p>
+                </div>
+
+            </section>
+
+            <!-- TABLE CONTENT -->
+            <section class="admin-content">
+
+                <div class="admin-content-header">
+                    <h2>Management</h2>
+                    <p>View and manage registered accounts and products.</p>
+                </div>
+
+                <p id="admin-status" class="admin-status" role="status">
+                    Please select an action.
+                </p>
+
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead id="admin-table-head"></thead>
+                        <tbody id="admin-table-body"></tbody>
+                    </table>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+       
+const statusMessage = document.getElementById("admin-status");
+const tableHead = document.getElementById("admin-table-head");
+const tableBody = document.getElementById("admin-table-body");
+
+// ADMIN: Check Login Session
+const adminSessionToken = sessionStorage.getItem("thriftMatchToken");
+
+if (!adminSessionToken) {
+    window.location.replace("/admin-login.html");
+}
+
+// ADMIN: Load Dashboard Summary
+async function loadAdminSummary() {
+    const token = sessionStorage.getItem("thriftMatchToken");
+
+    if (!token) {
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/admin/summary", {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || "Failed to load dashboard summary.");
+        }
+
+        document.getElementById("total-accounts").textContent =
+            result.total_accounts;
+
+        document.getElementById("total-users").textContent =
+            result.total_users;
+
+        document.getElementById("total-customers").textContent =
+            result.total_customers;
+
+        document.getElementById("total-sellers").textContent =
+            result.total_sellers;
+
+        document.getElementById("total-products").textContent =
+         result.total_products;
+    } catch (error) {
+    console.error("Dashboard summary error:", error.message);
+
+    if (error.message.includes("Invalid or expired login session")) {
+        sessionStorage.removeItem("thriftMatchToken");
+        window.location.replace("/admin-login.html");
+        }
+    }
+}
+
+loadAdminSummary();
+
+async function loadAdminUsers() {
+    const token = sessionStorage.getItem("thriftMatchToken");
+
+    if (!token) {
+        statusMessage.textContent =
+            "Please log in through the Admin Login page first.";
+        return;
+    }
+
+    statusMessage.textContent = "Loading users...";
+    tableHead.replaceChildren();
+    tableBody.replaceChildren();
+
+    try {
+        const response = await fetch("/api/admin/users", {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || "Failed to load users.");
+        }
+
+            const headerRow = document.createElement("tr");
+
+            ["ID", "Full Name", "Email", "Role"].forEach(label => {
+                const th = document.createElement("th");
+                th.textContent = label;
+                headerRow.appendChild(th);
+            });
+
+            tableHead.appendChild(headerRow);
+
+        result.forEach(user => {
+            const row = document.createElement("tr");
+
+            [user.id, user.full_name, user.email, user.role].forEach(value => {
+                const cell = document.createElement("td");
+                cell.textContent = value ?? "";
+                row.appendChild(cell);
+            });
+
+            tableBody.appendChild(row);
+        });
+
+        statusMessage.textContent = `${result.length} user(s) found.`;
+    } catch (error) {
+        statusMessage.textContent = error.message;
+    }
+}
+
+document.getElementById("load-users-button").addEventListener("click", loadAdminUsers);
+
+document.getElementById("admin-logout-button").addEventListener("click", () => {
+    sessionStorage.removeItem("thriftMatchToken");
+    window.location.href = "/admin-login.html";
+});
+
+async function loadAdminProducts() {
+    const token = sessionStorage.getItem("thriftMatchToken");
+
+    if (!token) {
+        statusMessage.textContent =
+            "Please log in through the Admin Login page first.";
+        return;
+    }
+
+    statusMessage.textContent = "Loading products...";
+    tableHead.replaceChildren();
+    tableBody.replaceChildren();
+
+    try {
+        const response = await fetch("/api/admin/products", {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || "Failed to load products.");
+        }
+
+        const headerRow = document.createElement("tr");
+
+                    ["ID", "Image", "Product Name", "Price", "Seller", "Action"].forEach(label => {
+                const th = document.createElement("th");
+                th.textContent = label;
+                headerRow.appendChild(th);
+            });
+
+        tableHead.appendChild(headerRow);
+
+        result.forEach(product => {
+    const row = document.createElement("tr");
+
+    // Product ID
+    const idCell = document.createElement("td");
+    idCell.textContent = product.id;
+    row.appendChild(idCell);
+
+    // Product Image
+    const imageCell = document.createElement("td");
+    const image = document.createElement("img");
+
+    const productImages =
+        Array.isArray(product.image_urls) && product.image_urls.length > 0
+            ? product.image_urls
+            : (product.image_url ? [product.image_url] : []);
+
+    image.src = productImages[0] ||
+        "https://placehold.co/100x100/EEE4D8/70543F?text=No+Image";
+
+    image.alt = product.product_name || "Product image";
+    image.style.width = "80px";
+    image.style.height = "80px";
+    image.style.objectFit = "cover";
+
+    image.onerror = () => {
+        image.onerror = null;
+        image.src = "https://placehold.co/100x100/EEE4D8/70543F?text=No+Image";
+    };
+
+    imageCell.appendChild(image);
+    row.appendChild(imageCell);
+
+    // Product Name
+    const nameCell = document.createElement("td");
+    nameCell.textContent = product.product_name || "";
+    row.appendChild(nameCell);
+
+    // Price
+    const priceCell = document.createElement("td");
+    priceCell.textContent = "₱" + Number(product.price).toFixed(2);
+    row.appendChild(priceCell);
+
+   // Seller
+const sellerCell = document.createElement("td");
+sellerCell.textContent = product.seller_name || "Unknown";
+row.appendChild(sellerCell);
+
+// Action - Delete Button
+const actionCell = document.createElement("td");
+
+const deleteButton = document.createElement("button");
+deleteButton.textContent = "Delete";
+deleteButton.style.backgroundColor = "#b85c5c";
+deleteButton.style.color = "white";
+deleteButton.style.border = "none";
+deleteButton.style.padding = "8px 12px";
+deleteButton.style.borderRadius = "5px";
+deleteButton.style.cursor = "pointer";
+
+deleteButton.addEventListener("click", () => {
+    deleteAdminProduct(product.id);
+});
+
+actionCell.appendChild(deleteButton);
+row.appendChild(actionCell);
+
+tableBody.appendChild(row);
+});
+
+        statusMessage.textContent = `${result.length} product(s) found.`;
+    } catch (error) {
+        statusMessage.textContent = error.message;
+    }
+}
+
+// ADMIN: Delete Product
+async function deleteAdminProduct(productId) {
+    const confirmDelete = confirm(
+        "Are you sure you want to delete this product?"
+    );
+
+    if (!confirmDelete) {
+        return;
+    }
+
+    const token = sessionStorage.getItem("thriftMatchToken");
+
+    if (!token) {
+        statusMessage.textContent = "Please log in first.";
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/admin/products/${productId}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || "Failed to delete product.");
+        }
+
+        statusMessage.textContent = result.message;
+
+        // Reload the product list
+        await loadAdminProducts();
+
+    } catch (error) {
+        statusMessage.textContent = error.message;
+    }
+}
+
+document.getElementById("load-products-button")
+    .addEventListener("click", loadAdminProducts);
+
+    
+// SIDEBAR: Active Navigation Highlight
+const sidebarLinks = document.querySelectorAll(".sidebar-link");
+
+sidebarLinks.forEach(link => {
+    link.addEventListener("click", function () {
+        sidebarLinks.forEach(item => {
+            item.classList.remove("active");
+        });
+
+        this.classList.add("active");
+    });
+});
+
+
+    </script>
+</body>
+</html>
