@@ -59,7 +59,7 @@ function requireSeller(req, res, next) {
     next();
 }
 
-const db = mysql.createConnection({
+const db = mysql.createPool({
     host: process.env.DB_HOST || "localhost",
     port: process.env.DB_PORT || 3306,
     user: process.env.DB_USER || "root",
@@ -68,16 +68,20 @@ const db = mysql.createConnection({
     ssl: process.env.DB_HOST ? {
         ca: fs.readFileSync("/etc/secrets/ca.pem"),
         rejectUnauthorized: true
-    } : undefined
+    } : undefined,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
-db.connect((err) => {
+db.getConnection((err, connection) => {
     if (err) {
         console.error("MySQL connection failed:", err.message);
         return;
     }
 
     console.log("Connected to ThriftMatch MySQL database!");
+    connection.release();
 });
 
 app.get("/api/admin/check", authenticateToken, requireAdmin, (req, res) => {
