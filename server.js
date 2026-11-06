@@ -274,6 +274,7 @@ app.get("/api/admin/products", authenticateToken, requireAdmin, (req, res) => {
 });
 
 
+ 
  // POST: Add a product
 app.post("/api/products", authenticateToken, requireSeller, (req, res) => {
     const {
@@ -333,7 +334,11 @@ app.post("/api/products", authenticateToken, requireSeller, (req, res) => {
         productImages = image_urls.map(url => url.trim());
     } else if (typeof image_url === "string" && image_url.trim()) {
         productImages = [image_url.trim()];
-    } else if (image_url !== undefined && image_url !== null && typeof image_url !== "string") {
+    } else if (
+        image_url !== undefined &&
+        image_url !== null &&
+        typeof image_url !== "string"
+    ) {
         return res.status(400).json({
             message: "Please provide a valid image URL."
         });
@@ -341,101 +346,124 @@ app.post("/api/products", authenticateToken, requireSeller, (req, res) => {
 
     const primaryImage = productImages[0] || null;
 
-    db.beginTransaction(err => {
+    // Get an individual connection from the pool
+    db.getConnection((err, connection) => {
         if (err) {
-            console.error("Transaction error:", err.message);
+            console.error("Database connection error:", err.message);
             return res.status(500).json({
-                message: "Failed to start product save."
+                message: "Failed to connect to database."
             });
         }
 
-        const sql = `
-            INSERT INTO products
-            (product_name, price, size, color, style, description, availability, image_url, user_id)
-            VALUES (?, ?, ?, ?, ?, ?, 'Available', ?, ?)
-        `;
-
-        const values = [
-            product_name.trim(),
-            Number(price),
-            size,
-            color.trim(),
-            style,
-            description.trim(),
-            primaryImage,
-            req.user.id
-        ];
-
-        db.query(sql, values, (err, result) => {
+        connection.beginTransaction(err => {
             if (err) {
-                return db.rollback(() => {
-                    console.error("Error adding product:", err.message);
-                    res.status(500).json({
-                        message: "Failed to save product."
-                    });
+                console.error("Transaction error:", err.message);
+                connection.release();
+
+                return res.status(500).json({
+                    message: "Failed to start product save."
                 });
             }
 
-            const productId = result.insertId;
-
-            if (productImages.length === 0) {
-                return db.commit(err => {
-                    if (err) {
-                        return db.rollback(() => {
-                            res.status(500).json({
-                                message: "Failed to save product."
-                            });
-                        });
-                    }
-
-                    res.status(201).json({
-                        message: "Product added successfully!",
-                        productId
-                    });
-                });
-            }
-
-            const imageValues = productImages.map((url, index) => [
-                productId,
-                url,
-                index + 1
-            ]);
-
-            const imageSql = `
-                INSERT INTO product_images
-                (product_id, image_url, sort_order)
-                VALUES ?
+            const sql = `
+                INSERT INTO products
+                (product_name, price, size, color, style, description, availability, image_url, user_id)
+                VALUES (?, ?, ?, ?, ?, ?, 'Available', ?, ?)
             `;
 
-            db.query(imageSql, [imageValues], (err) => {
+            const values = [
+                product_name.trim(),
+                Number(price),
+                size,
+                color.trim(),
+                style,
+                description.trim(),
+                primaryImage,
+                req.user.id
+            ];
+
+            connection.query(sql, values, (err, result) => {
                 if (err) {
-                    return db.rollback(() => {
-                        console.error("Error saving product images:", err.message);
+                    console.error("Error adding product:", err.message);
+
+                    return connection.rollback(() => {
+                        connection.release();
+
                         res.status(500).json({
-                            message: "Failed to save product images."
+                            message: "Failed to save product."
                         });
                     });
                 }
 
-                db.commit(err => {
-                    if (err) {
-                        return db.rollback(() => {
-                            res.status(500).json({
-                                message: "Failed to save product."
-                            });
-                        });
+                const productId = result.insertId;
+
+                const saveProductImages = () => {
+                    if (productImages.length === 0) {
+                        return commitProduct();
                     }
 
-                    res.status(201).json({
-                        message: "Product added successfully!",
+                    const imageValues = productImages.map((url, index) => [
                         productId,
-                        imageCount: productImages.length
+                        url,
+                        index + 1
+                    ]);
+
+                    const imageSql = `
+                        INSERT INTO product_images
+                        (product_id, image_url, sort_order)
+                        VALUES ?
+                    `;
+
+                    connection.query(imageSql, [imageValues], err => {
+                        if (err) {
+                            console.error(
+                                "Error saving product images:",
+                                err.message
+                            );
+
+                            return connection.rollback(() => {
+                                connection.release();
+
+                                res.status(500).json({
+                                    message: "Failed to save product images."
+                                });
+                            });
+                        }
+
+                        commitProduct();
                     });
-                });
+                };
+
+                const commitProduct = () => {
+                    connection.commit(err => {
+                        if (err) {
+                            console.error("Commit error:", err.message);
+
+                            return connection.rollback(() => {
+                                connection.release();
+
+                                res.status(500).json({
+                                    message: "Failed to save product."
+                                });
+                            });
+                        }
+
+                        connection.release();
+
+                        res.status(201).json({
+                            message: "Product added successfully!",
+                            productId,
+                            imageCount: productImages.length
+                        });
+                    });
+                };
+
+                saveProductImages();
             });
         });
     });
 });
+
 
 
  // PUT: Update a product
