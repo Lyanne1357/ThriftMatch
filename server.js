@@ -532,127 +532,172 @@ app.put("/api/products/:id", authenticateToken, requireSeller, (req, res) => {
 
     const primaryImage = productImages[0] || null;
 
-    db.beginTransaction(err => {
+        db.getConnection((err, connection) => {
         if (err) {
-            console.error("Transaction error:", err.message);
+            console.error("Database connection error:", err.message);
+
             return res.status(500).json({
-                message: "Failed to start product update."
+                message: "Failed to connect to database."
             });
         }
 
-        const sql = `
-            UPDATE products
-            SET product_name = ?,
-                price = ?,
-                size = ?,
-                color = ?,
-                style = ?,
-                description = ?,
-                availability = ?,
-                image_url = ?
-            WHERE id = ? AND user_id = ?
-        `;
-
-        const values = [
-            product_name.trim(),
-            Number(price),
-            size,
-            color.trim(),
-            style,
-            description.trim(),
-            availability,
-            primaryImage,
-            productId,
-            req.user.id
-        ];
-
-        db.query(sql, values, (err, result) => {
+        connection.beginTransaction(err => {
             if (err) {
-                return db.rollback(() => {
+                console.error("Transaction error:", err.message);
+                connection.release();
+
+                return res.status(500).json({
+                    message: "Failed to start product update."
+                });
+            }
+
+            const rollbackAndRespond = (status, message) => {
+                connection.rollback(() => {
+                    connection.release();
+
+                    res.status(status).json({
+                        message
+                    });
+                });
+            };
+
+            const sql = `
+                UPDATE products
+                SET product_name = ?,
+                    price = ?,
+                    size = ?,
+                    color = ?,
+                    style = ?,
+                    description = ?,
+                    availability = ?,
+                    image_url = ?
+                WHERE id = ? AND user_id = ?
+            `;
+
+            const values = [
+                product_name.trim(),
+                Number(price),
+                size,
+                color.trim(),
+                style,
+                description.trim(),
+                availability,
+                primaryImage,
+                productId,
+                req.user.id
+            ];
+
+            connection.query(sql, values, (err, result) => {
+                if (err) {
                     console.error("Error updating product:", err.message);
-                    res.status(500).json({
-                        message: "Failed to update product."
-                    });
-                });
-            }
 
-            if (result.affectedRows === 0) {
-                return db.rollback(() => {
-                    res.status(404).json({
-                        message: "Product not found or you do not own it."
-                    });
-                });
-            }
+                    return rollbackAndRespond(
+                        500,
+                        "Failed to update product."
+                    );
+                }
 
-            db.query(
-                "DELETE FROM product_images WHERE product_id = ?",
-                [productId],
-                err => {
-                    if (err) {
-                        return db.rollback(() => {
-                            console.error("Error replacing images:", err.message);
-                            res.status(500).json({
-                                message: "Failed to update product images."
-                            });
-                        });
-                    }
+                if (result.affectedRows === 0) {
+                    return rollbackAndRespond(
+                        404,
+                        "Product not found or you do not own it."
+                    );
+                }
 
-                    if (productImages.length === 0) {
-                        return db.commit(err => {
-                            if (err) {
-                                return db.rollback(() => {
-                                    res.status(500).json({
-                                        message: "Failed to update product."
-                                    });
-                                });
-                            }
-
-                            res.json({
-                                message: "Product updated successfully!",
-                                imageCount: 0
-                            });
-                        });
-                    }
-
-                    const imageValues = productImages.map((url, index) => [
-                        productId,
-                        url,
-                        index + 1
-                    ]);
-
-                    const imageSql = `
-                        INSERT INTO product_images
-                        (product_id, image_url, sort_order)
-                        VALUES ?
-                    `;
-
-                    db.query(imageSql, [imageValues], err => {
+                connection.query(
+                    "DELETE FROM product_images WHERE product_id = ?",
+                    [productId],
+                    err => {
                         if (err) {
-                            return db.rollback(() => {
-                                console.error("Error saving images:", err.message);
-                                res.status(500).json({
-                                    message: "Failed to update product images."
+                            console.error(
+                                "Error replacing images:",
+                                err.message
+                            );
+
+                            return rollbackAndRespond(
+                                500,
+                                "Failed to update product images."
+                            );
+                        }
+
+                        if (productImages.length === 0) {
+                            return connection.commit(err => {
+                                if (err) {
+                                    console.error(
+                                        "Commit error:",
+                                        err.message
+                                    );
+
+                                    return rollbackAndRespond(
+                                        500,
+                                        "Failed to update product."
+                                    );
+                                }
+
+                                connection.release();
+
+                                return res.json({
+                                    message: "Product updated successfully!",
+                                    imageCount: 0
                                 });
                             });
                         }
 
-                        db.commit(err => {
-                            if (err) {
-                                return db.rollback(() => {
-                                    res.status(500).json({
-                                        message: "Failed to update product."
+                        const imageValues = productImages.map(
+                            (url, index) => [
+                                productId,
+                                url,
+                                index + 1
+                            ]
+                        );
+
+                        const imageSql = `
+                            INSERT INTO product_images
+                            (product_id, image_url, sort_order)
+                            VALUES ?
+                        `;
+
+                        connection.query(
+                            imageSql,
+                            [imageValues],
+                            err => {
+                                if (err) {
+                                    console.error(
+                                        "Error saving images:",
+                                        err.message
+                                    );
+
+                                    return rollbackAndRespond(
+                                        500,
+                                        "Failed to update product images."
+                                    );
+                                }
+
+                                connection.commit(err => {
+                                    if (err) {
+                                        console.error(
+                                            "Commit error:",
+                                            err.message
+                                        );
+
+                                        return rollbackAndRespond(
+                                            500,
+                                            "Failed to update product."
+                                        );
+                                    }
+
+                                    connection.release();
+
+                                    return res.json({
+                                        message: "Product updated successfully!",
+                                        imageCount: productImages.length
                                     });
                                 });
                             }
-
-                            res.json({
-                                message: "Product updated successfully!",
-                                imageCount: productImages.length
-                            });
-                        });
-                    });
-                }
-            );
+                        );
+                    }
+                );
+            });
         });
     });
 });
