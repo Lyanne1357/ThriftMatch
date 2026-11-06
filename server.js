@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2");
 const fs = require("fs");
+const path = require("path");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -12,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 
 // Middleware: Verify user login token
 function authenticateToken(req, res, next) {
